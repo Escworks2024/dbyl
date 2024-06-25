@@ -1,239 +1,562 @@
 <!DOCTYPE html>
+
 <html lang="it">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Calcolo Prezzo di Liquidazione</title>
+
     <style>
+
         body {
+
             background: url('https://g.foolcdn.com/image/?url=https%3A//g.foolcdn.com/editorial/images/781084/gold-coin-with-bitcoin-symbol-on-it-cryptocurrency-btc.jpg&w=2000&op=resize') no-repeat center center fixed;
+
             background-size: cover;
+
             font-family: Arial, sans-serif;
+
             color: #fff;
+
             text-align: center;
-            margin: 0;
-            padding: 0;
+
         }
+
+
 
         #container {
+
             background-color: rgba(0, 0, 0, 0.7);
+
             padding: 20px;
+
             border-radius: 10px;
+
             display: inline-block;
+
             margin-top: 50px;
+
         }
+
+
 
         h1 {
+
             font-size: 2em;
+
             margin-bottom: 20px;
+
             animation: fadeIn 2s;
+
         }
+
+
 
         form {
+
             animation: fadeIn 2s;
+
         }
+
+
 
         .search-box {
+
             position: relative;
+
         }
+
+
 
         .search-box input {
+
             width: 100%;
+
             padding: 8px;
+
             box-sizing: border-box;
+
             border-radius: 5px;
+
             border: 1px solid #ccc;
+
             margin-bottom: 10px;
+
             color: #000;
+
         }
+
+
 
         .search-results {
+
             position: absolute;
+
             top: 100%;
+
             left: 0;
+
             right: 0;
+
             border: 1px solid #ccc;
+
             max-height: 200px;
+
             overflow-y: auto;
+
             background: #fff;
+
             z-index: 1000;
+
             border-radius: 5px;
+
             color: #000;
+
         }
+
+
 
         .search-results div {
+
             padding: 8px;
+
             cursor: pointer;
+
         }
+
+
 
         .search-results div:hover {
+
             background: #f0f0f0;
+
         }
+
+
 
         select, input[type="number"], button {
+
             width: calc(100% - 20px);
+
             padding: 10px;
+
             margin: 10px 0;
+
             border-radius: 5px;
+
             border: 1px solid #ccc;
+
             color: #000;
+
         }
+
+
 
         button {
+
             background-color: #28a745;
+
             color: #fff;
+
             border: none;
+
             cursor: pointer;
+
             transition: background-color 0.3s;
+
         }
+
+
 
         button:hover {
+
             background-color: #218838;
+
         }
+
+
 
         #result {
+
             margin-top: 20px;
+
             animation: fadeIn 2s;
+
         }
 
-        footer {
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-            border-top: 1px solid #ccc;
-            margin-top: 20px;
-            animation: fadeIn 2s;
-        }
 
-        footer img {
-            width: 100px;
-            height: auto;
-            margin-top: 10px;
-        }
 
         @keyframes fadeIn {
+
             from { opacity: 0; }
+
             to { opacity: 1; }
+
         }
+
     </style>
+
 </head>
+
 <body>
+
     <div id="container">
+
         <h1>Calcolo Prezzo di Liquidazione per Trade su Criptovalute</h1>
+
         <form id="liquidationForm">
+
             <div class="search-box">
+
                 <input type="text" id="cryptoSearch" placeholder="Cerca criptovaluta..." oninput="filterCryptos()">
+
                 <div id="searchResults" class="search-results"></div>
+
             </div><br>
+
             <label for="cryptoSelect">Seleziona Criptovaluta:</label>
+
             <select id="cryptoSelect" onchange="getCryptoPrice()">
+
                 <!-- Le opzioni verranno aggiunte dinamicamente tramite JavaScript -->
+
             </select><br><br>
+
             <label for="currencySelect">Seleziona Valuta Fiat:</label>
+
             <select id="currencySelect" onchange="getCryptoPrice()">
+
                 <option value="eur">Euro (€)</option>
+
                 <option value="usd">Dollaro Statunitense ($)</option>
+
                 <option value="gbp">Sterlina Britannica (£)</option>
+
                 <!-- Aggiungi altre valute fiat se necessario -->
+
             </select><br><br>
+
             <label for="entryPrice">Prezzo di Ingresso (€):</label>
+
             <input type="number" id="entryPrice" step="0.01" required><br><br>
+
             <label for="leverage">Leva (x):</label>
+
             <input type="number" id="leverage" step="1" required><br><br>
+
             <button type="button" onclick="calculateLiquidationPrice()">Calcola Prezzo di Liquidazione</button>
+
         </form>
+
         <h2 id="result"></h2>
+
     </div>
 
-    <footer>
-        <p>Contatti: dontburnyourleverage@gmail.com</p>
-        <img src="/mnt/data/DALL·E 2024-06-25 16.44.17 - Create a modern, professional logo for 'dontburnyourleverage'. The logo should incorporate elements of financial trading, such as charts or upward tre.webp" alt="Don't Burn Your Leverage Logo">
-    </footer>
+
 
     <script>
+
         let cryptos = [];
 
+
+
         document.addEventListener('DOMContentLoaded', (event) => {
+
             loadCryptos();
+
         });
 
+
+
         async function loadCryptos() {
+
             const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&order=market_cap_desc&per_page=500&page=1';
+
             
+
             try {
+
                 const response = await fetch(url);
+
                 cryptos = await response.json();
+
                 const cryptoSelect = document.getElementById('cryptoSelect');
 
+
+
                 cryptos.forEach(crypto => {
+
                     const option = document.createElement('option');
+
                     option.value = crypto.id;
-                    option.text = `${crypto.name} (${crypto.symbol.toUpperCase()})`;
+
+                    option.text = ${crypto.name} (${crypto.symbol.toUpperCase()});
+
                     cryptoSelect.appendChild(option);
+
                 });
+
+
 
                 getCryptoPrice();  // Fetch the price of the first cryptocurrency in the list
 
+
+
             } catch (error) {
+
                 console.error('Errore nel caricamento delle criptovalute:', error);
+
             }
+
         }
+
+
 
         function filterCryptos() {
+
             const query = document.getElementById('cryptoSearch').value.toLowerCase();
+
             const searchResults = document.getElementById('searchResults');
+
             searchResults.innerHTML = '';
 
+
+
             if (query.length > 0) {
+
                 const filtered = cryptos.filter(crypto => crypto.name.toLowerCase().includes(query) || crypto.symbol.toLowerCase().includes(query));
+
                 
+
                 filtered.forEach(crypto => {
+
                     const div = document.createElement('div');
-                    div.textContent = `${crypto.name} (${crypto.symbol.toUpperCase()})`;
+
+                    div.textContent = ${crypto.name} (${crypto.symbol.toUpperCase()});
+
                     div.onclick = () => selectCrypto(crypto.id, crypto.name, crypto.symbol);
+
                     searchResults.appendChild(div);
+
                 });
+
             }
+
         }
+
+
 
         function selectCrypto(id, name, symbol) {
+
             const cryptoSelect = document.getElementById('cryptoSelect');
+
             cryptoSelect.value = id;
-            document.getElementById('cryptoSearch').value = `${name} (${symbol.toUpperCase()})`;
+
+            document.getElementById('cryptoSearch').value = ${name} (${symbol.toUpperCase()});
+
             document.getElementById('searchResults').innerHTML = '';
+
             getCryptoPrice();
+
         }
+
+
 
         async function getCryptoPrice() {
+
             const crypto = document.getElementById('cryptoSelect').value;
+
             const currency = document.getElementById('currencySelect').value;
-            const url = `https://api.coingecko.com/api/v3/simple/price?ids=${crypto}&vs_currencies=${currency}`;
+
+            const url = https://api.coingecko.com/api/v3/simple/price?ids=${crypto}&vs_currencies=${currency};
+
             
+
             try {
+
                 const response = await fetch(url);
+
                 const data = await response.json();
+
                 const price = data[crypto][currency];
 
+
+
                 document.getElementById('entryPrice').value = price.toFixed(2);
+
             } catch (error) {
+
                 console.error('Errore nel recupero del prezzo:', error);
+
                 document.getElementById('entryPrice').value = 'Errore';
+
             }
+
         }
+
+
 
         function calculateLiquidationPrice() {
+
             const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+
             const leverage = parseInt(document.getElementById('leverage').value);
 
+
+
             if (!isNaN(entryPrice) && !isNaN(leverage) && leverage > 0) {
+
                 const liquidationPrice = entryPrice * (1 - (1 / leverage));
+
                 const drawdownPercentage = ((entryPrice - liquidationPrice) / entryPrice) * 100;
-                document.getElementById('result').innerText = `Prezzo di Liquidazione: €${liquidationPrice.toFixed(4)} (${drawdownPercentage.toFixed(2)}%)`;
+
+                document.getElementById('result').innerText = Prezzo di Liquidazione: €${liquidationPrice.toFixed(4)} (${drawdownPercentage.toFixed(2)}%);
+
             } else {
+
                 document.getElementById('result').innerText = 'Per favore, inserisci valori validi.';
+
             }
+
         }
+
+
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+
+            loadCryptos();
+
+        });
+
     </script>
+
 </body>
+<style>
+    body {
+        background: url('https://g.foolcdn.com/image/?url=https%3A//g.foolcdn.com/editorial/images/781084/gold-coin-with-bitcoin-symbol-on-it-cryptocurrency-btc.jpg&w=2000&op=resize') no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+        color: #fff;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    #container {
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-block;
+        margin-top: 50px;
+    }
+
+    h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        animation: fadeIn 2s;
+    }
+
+    form {
+        animation: fadeIn 2s;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        color: #000;
+    }
+
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
+        background: #fff;
+        z-index: 1000;
+        border-radius: 5px;
+        color: #000;
+    }
+
+    .search-results div {
+        padding: 8px;
+        cursor: pointer;
+    }
+
+    .search-results div:hover {
+        background: #f0f0f0;
+    }
+
+    select, input[type="number"], button {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        color: #000;
+    }
+
+    button {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+
+    #result {
+        margin-top: 20px;
+        animation: fadeIn 2s;
+    }
+
+    footer {
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid #ccc;
+        margin-top: 20px;
+        animation: fadeIn 2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer-item {
+        flex: 1;
+    }
+
+    .footer-item img {
+        width: 100px;
+        height: auto;
+    }
+
+    .footer-item p {
+        margin: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
 </html>
