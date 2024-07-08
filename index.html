@@ -126,7 +126,13 @@ footer {
 }
 
 .footer-item {
-    flex: 1
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.footer-item img {
+    width: 100px;
 .footer-item img {
     width: 100px;
     height: auto;
@@ -139,8 +145,7 @@ footer {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
-}
-</style>
+}</style>
         
   </head>
   <body>
@@ -221,7 +226,6 @@ footer {
     <script src="script.js"></script>
 </body>
 </html>
-
         <script>let cryptos = [];
 
 document.addEventListener('DOMContentLoaded', (event) => {
