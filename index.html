@@ -107,6 +107,11 @@ button:hover {
     min-width: 150px;
 }
 
+#loading {
+    font-size: 1.2em;
+    color: #fff;
+}
+
 footer {
     background-color: rgba(0, 0, 0, 0.7);
     color: #fff;
@@ -121,11 +126,7 @@ footer {
 }
 
 .footer-item {
-    flex: 1;
-    display: flex;
-    align-items: center;
-}
-
+    flex: 1
 .footer-item img {
     width: 100px;
     height: auto;
@@ -197,6 +198,7 @@ footer {
             </select>
         </div>
         <button type="button" onclick="updateMarketCap()">Compare MarketCap</button>
+        <div id="loading" style="display:none;">Caricamento...</div>
         <div id="marketCapResult">
             <div class="market-cap-box" id="leftMarketCap"></div>
             <p id="resultText">Seleziona le Cryptovalute da comparare</p>
@@ -206,13 +208,13 @@ footer {
 
     <footer>
         <div class="footer-item" style="text-align: left;">
-            <img src="https://scontent.ffco2-1.fna.fbcdn.net/v/t39.30808-6/449277168_122094227402388984_1156168773415665375_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=AMcPN1VvHiIQ7kNvgHNSqLz&_nc_ht=scontent.ffco2-1.fna&oh=00_AYALA5PjTQDpWUTtzClNgUVTDlBpo38GifHFp_MzRUizhA&oe=669235FD" alt="Don't Burn Your Leverage Logo" style="width: 100px; height: auto;">
+            <img src="https://scontent.ffjr1-1.fna.fbcdn.net/v/t39.30808-1/449277168_122094227402388984_1156168773415665375_n.jpg?stp=dst-jpg_p200x200&_nc_cat=105&ccb=1-7&_nc_sid=0ecb9b&_nc_ohc=6r0ACOJI04QQ7kNvgFaT6Q3&_nc_ht=scontent.ffjr1-1.fna&oh=00_AYAwNaPdwch-ZdlbLgePH9DxXd6kbMQVGFsmZBE2J_7fvA&oe=6680B85A" alt="Don't Burn Your Leverage Logo" style="width: 100px; height: auto;">
         </div>
         <div class="footer-item" style="text-align: center;">
             <p>Contacts: <a href="mailto:dontburnyourleverage@gmail.com" style="color: #fff;">dontburnyourleverage@gmail.com</a></p>
         </div>
         <div class="footer-item" style="text-align: right;">
-            <p>Donate ETH: <img src="https://scontent.ffco2-1.fna.fbcdn.net/v/t39.30808-6/449164454_122094229472388984_9146269100607639915_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_ohc=VennaEhmrDwQ7kNvgGKARpF&_nc_ht=scontent.ffco2-1.fna&oh=00_AYDleTGAsfpeE2GjWc0tkUFr7NWF2go4P_GCstxKK4HZGQ&oe=66922C95" alt="Donate ETH Logo" style="width: 100px; height: auto;"></p>
+            <p>Donate ETH: <img src="https://scontent.ffjr1-2.fna.fbcdn.net/v/t39.30808-6/449164454_122094229472388984_9146269100607639915_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_ohc=pR8MEjEuMMIQ7kNvgFmubM7&_nc_ht=scontent.ffjr1-2.fna&oh=00_AYAfBCg4LZrTeaZSHm2GXvmRbf71V91NWJOP1tKn8H2Hhw&oe=66809895" alt="Donate ETH Logo" style="width: 100px; height: auto;"></p>
         </div>
     </footer>
 
@@ -343,6 +345,7 @@ async function updateMarketCap() {
     const cryptoRight = document.getElementById('cryptoRight').value;
 
     if (cryptoLeft && cryptoRight) {
+        document.getElementById('loading').style.display = 'block';
         try {
             const responseLeft = await fetch(`https://api.coingecko.com/api/v3/coins/${cryptoLeft}`);
             const dataLeft = await responseLeft.json();
@@ -362,6 +365,8 @@ async function updateMarketCap() {
         } catch (error) {
             console.error('Errore nel recupero dei dati delle criptovalute:', error);
             document.getElementById('resultText').innerText = 'Error retrieving data. Please try again.';
+        } finally {
+            document.getElementById('loading').style.display = 'none';
         }
     } else {
         document.getElementById('resultText').innerText = 'Please select both cryptocurrencies to compare.';
