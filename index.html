@@ -3,82 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confronto Market Cap Crypto</title>
+    <title>Site View Counter & Crypto Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+        footer {
+            background-color: #000;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .box {
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Confronto Market Cap Criptovalute</h1>
-    <label for="crypto1">Seleziona la prima criptovaluta:</label>
-    <select id="crypto1"></select>
-
-    <label for="crypto2">Seleziona la seconda criptovaluta:</label>
-    <select id="crypto2"></select>
-
-    <button onclick="compareMarketCap()">Confronta Market Cap</button>
-
-    <h2>Risultato:</h2>
-    <div id="result"></div>
+    <header>
+        <h1 class="title has-text-centered">Welcome to My Website</h1>
+    </header>
+    <div class="container">
+        <div class="box">
+            <h1 class="title">Confronto Market Cap Criptovalute</h1>
+            <p class="subtitle">Seleziona due criptovalute per confrontare la loro capitalizzazione di mercato e vedere come cambierebbe il prezzo.</p>
+            <div class="field">
+                <label class="label" for="crypto1">Seleziona la prima criptovaluta:</label>
+                <div class="control">
+                    <input class="input" type="text" id="searchCrypto1" placeholder="Cerca criptovaluta...">
+                </div>
+                <div class="control">
+                    <select class="input" id="crypto1"></select>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="crypto2">Seleziona la seconda criptovaluta:</label>
+                <div class="control">
+                    <input class="input" type="text" id="searchCrypto2" placeholder="Cerca criptovaluta...">
+                </div>
+                <div class="control">
+                    <select class="input" id="crypto2"></select>
+                </div>
+            </div>
+            <div class="control">
+                <button class="button is-primary" onclick="compareMarketCap()">Confronta Market Cap</button>
+            </div>
+            <div id="result" class="content" style="margin-top: 20px;"></div>
+        </div>
+        <button class="button" onclick="toggleSecondForm()">Apri Tool di Calcolo Liquidazione</button>
+        <div id="secondForm" style="display: none;">
+            <div class="box">
+                <h1 class="title">Calcolo del Punto di Liquidazione</h1>
+                <p class="subtitle">Seleziona una criptovaluta, inserisci la leva finanziaria e scegli se andare LONG o SHORT per calcolare il punto di liquidazione.</p>
+                <form id="liquidationForm">
+                    <div class="field">
+                        <label class="label" for="cryptoSelect">Seleziona la criptovaluta:</label>
+                        <div class="control">
+                            <select id="cryptoSelect" class="input">
+                                <option value="">Seleziona una criptovaluta</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="leverage">Inserisci la leva finanziaria:</label>
+                        <div class="control">
+                            <input id="leverage" class="input" type="number" placeholder="Es. 5" min="1">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Scegli direzione:</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="position" value="long"> LONG
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="position" value="short"> SHORT
+                            </label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary" type="button" onclick="calculateLiquidation()">Calcola Punto di Liquidazione</button>
+                    </div>
+                </form>
+                <div id="liquidationResult" class="content" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+        <p class="content has-text-centered">Enjoy browsing the site!</p>
+    </div>
+    <footer>
+        <p id="viewCount">Loading view count...</p>
+    </footer>
 
     <script>
-        // Funzione per caricare le criptovalute disponibili nella lista
+        function toggleSecondForm() {
+            const form = document.getElementById('secondForm');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
         async function loadCryptos() {
             try {
-                const response = await fetch('https://api.coingecko.com/api/v3/coins/list');
+                const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc`);
                 const cryptos = await response.json();
                 const selectCrypto1 = document.getElementById('crypto1');
                 const selectCrypto2 = document.getElementById('crypto2');
+                const cryptoSelect = document.getElementById('cryptoSelect');
 
-                cryptos.forEach(crypto => {
+                selectCrypto1.innerHTML = '';
+                selectCrypto2.innerHTML = '';
+                cryptoSelect.innerHTML = '<option value="">Seleziona una criptovaluta</option>';
+
+                cryptos.forEach((crypto, index) => {
                     const option1 = document.createElement('option');
                     option1.value = crypto.id;
-                    option1.text = crypto.name;
+                    option1.innerHTML = `${index + 1}. ${crypto.name} (Market Cap: USD ${crypto.market_cap.toLocaleString()})`;
                     selectCrypto1.add(option1);
 
                     const option2 = document.createElement('option');
                     option2.value = crypto.id;
-                    option2.text = crypto.name;
+                    option2.innerHTML = `${index + 1}. ${crypto.name} (Market Cap: USD ${crypto.market_cap.toLocaleString()})`;
                     selectCrypto2.add(option2);
+
+                    const option3 = document.createElement('option');
+                    option3.value = crypto.id;
+                    option3.innerHTML = `${crypto.name}`;
+                    cryptoSelect.add(option3);
                 });
             } catch (error) {
                 console.error('Errore durante il caricamento delle criptovalute:', error);
             }
         }
 
-        loadCryptos();
+        function calculateLiquidation() {
+            const crypto = document.getElementById('cryptoSelect').value;
+            const leverage = parseFloat(document.getElementById('leverage').value);
+            const position = document.querySelector('input[name="position"]:checked');
 
-        // Funzione per confrontare le market cap delle criptovalute selezionate
-        async function compareMarketCap() {
-            const crypto1Id = document.getElementById('crypto1').value;
-            const crypto2Id = document.getElementById('crypto2').value;
-
-            if (!crypto1Id || !crypto2Id) {
-                alert('Seleziona entrambe le criptovalute per il confronto.');
+            if (!crypto || !leverage || !position) {
+                alert('Per favore, completa tutti i campi per calcolare il punto di liquidazione.');
                 return;
             }
 
-            try {
-                const response1 = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto1Id}`);
-                const response2 = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto2Id}`);
-                const crypto1 = await response1.json();
-                const crypto2 = await response2.json();
+            const liquidationPrice = (position.value === 'long')
+                ? (100 / leverage).toFixed(2)
+                : (100 * leverage).toFixed(2);
 
-                const marketCap1 = crypto1.market_data.market_cap.usd;
-                const marketCap2 = crypto2.market_data.market_cap.usd;
-
-                const price1 = crypto1.market_data.current_price.usd;
-                const multiplier = marketCap2 / marketCap1;
-                const newPrice = price1 * multiplier;
-                const percentageIncrease = ((multiplier - 1) * 100).toFixed(2);
-
-                document.getElementById('result').innerHTML = `
-                    <p><strong>${crypto1.name}</strong> ha una market cap di: $${marketCap1.toLocaleString()}.</p>
-                    <p><strong>${crypto2.name}</strong> ha una market cap di: $${marketCap2.toLocaleString()}.</p>
-                    <p>Se <strong>${crypto1.name}</strong> avesse la market cap di <strong>${crypto2.name}</strong>, il suo prezzo sarebbe di: $${newPrice.toFixed(2)}.</p>
-                    <p>Questo rappresenta un incremento del <strong>${percentageIncrease}%</strong> rispetto al prezzo attuale.</p>
-                `;
-            } catch (error) {
-                console.error('Errore durante il confronto delle market cap:', error);
-            }
+            document.getElementById('liquidationResult').innerHTML = `
+                <p>Con una leva di <strong>${leverage}x</strong> e una posizione <strong>${position.value.toUpperCase()}</strong>, il punto di liquidazione è: <strong>${liquidationPrice}</strong>.</p>
+            `;
         }
+
+        // Retrieve view count from localStorage or initialize it
+        let viewCount = localStorage.getItem('viewCount');
+        if (!viewCount) {
+            viewCount = 0;
+        }
+
+        // Increment the view count
+        viewCount++;
+
+        // Store the updated view count back to localStorage
+        localStorage.setItem('viewCount', viewCount);
+
+        // Display the view count in the footer
+        document.getElementById('viewCount').innerText = `This site has been viewed ${viewCount} times.`;
+
+        // Load cryptocurrencies on page load
+        loadCryptos();
     </script>
 </body>
 </html>
